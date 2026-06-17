@@ -20,13 +20,11 @@
     </div>
 
     <div class="window-body">
-      <p class="intro-text">Watching for updates from the tracked phone...</p>
+      <p class="intro-text">Tracked devices:</p>
 
-      <div class="output-box">
-        <p>Latitude: <span id="lat">--</span></p>
-        <p>Longitude: <span id="lng">--</span></p>
-        <p>Accuracy: <span id="acc">--</span> meters</p>
-        <p>Last seen: <span id="lastSeen">never</span></p>
+      <!-- Filled in dynamically by dashboard.js — one row per device -->
+      <div id="deviceList" class="output-box device-list">
+        <p>Waiting for devices...</p>
       </div>
 
       <div id="map"></div>

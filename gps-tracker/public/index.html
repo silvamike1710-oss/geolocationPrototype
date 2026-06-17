@@ -22,7 +22,13 @@
 
 
         <div class="window-body">
-            <p class="intro-text">Click the button below and allow location access.</p>
+            <p class="intro-text">Name this device, then start sharing its location.</p>
+
+            <div class="field-row">
+                <label for="deviceName">Device name:</label>
+                <input type="text" id="deviceName" class="win95-input" placeholder="e.g. Phone 1" maxlength="40" />
+            </div>
+
             <button id="startBtn" class="win95-button">▶ Start GPS</button>
             <div class="output-box">
                 <p>Latitude: <span id="lat">--</span></p>

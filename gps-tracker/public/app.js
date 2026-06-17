@@ -1,4 +1,5 @@
 const startBtn = document.getElementById('startBtn');
+const deviceNameInput = document.getElementById('deviceName');
 const latEl = document.getElementById('lat');
 const lngEl = document.getElementById('lng');
 const accEl = document.getElementById('acc');
@@ -9,7 +10,21 @@ const statusEl = document.getElementById('status');
 let map;
 let marker;
 
+// localStorage saves data in the browser itself, even after closing the tab —
+// so this ONE phone remembers "I'm Phone 1" without you retyping it every time.
+deviceNameInput.value = localStorage.getItem('deviceName') || '';
+
 function getLocation() {
+    const deviceName = deviceNameInput.value.trim();
+
+    if (!deviceName) {
+        statusEl.textContent = '⚠️ Please enter a device name first.';
+        return;
+    }
+
+    // Remember this name for next time
+    localStorage.setItem('deviceName', deviceName);
+
     if (!navigator.geolocation) {
         statusEl.textContent = 'Geolocation is not supported on this device.';
         return;
@@ -51,7 +66,7 @@ async function postLocation(lat, lng, accuracy) {
                 'Content-Type': 'application/json',
                 'ngrok-skip-browser-warning': 'true' // tells ngrok's free tier to skip its warning page
             },
-            body: JSON.stringify({ lat, lng, accuracy })
+            body: JSON.stringify({ name: deviceNameInput.value.trim(), lat, lng, accuracy })
         });
 
         // Surface problems instead of failing silently

@@ -137,6 +137,52 @@ body {
   margin: 4px 0;
 }
 
+/* ---------- Device name field (phone page) ---------- */
+.field-row {
+  margin-bottom: 12px;
+}
+
+.field-row label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-dark);
+}
+
+.win95-input {
+  width: 100%;
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  padding: 6px 8px;
+  background: var(--text-light);
+  color: var(--text-dark);
+  border: none;
+  /* Sunken bevel — same trick as .output-box, opposite of the raised button */
+  box-shadow:
+    inset -1px -1px 0 var(--face-light),
+    inset 1px 1px 0 var(--face-dark);
+}
+
+/* ---------- Device list (dashboard page) ---------- */
+.device-list p {
+  margin: 6px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--face-dark);
+}
+
+.device-list p:last-child {
+  border-bottom: none;
+}
+
+/* The little name label that floats above each marker on the map */
+.device-label {
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  background: var(--accent-green);
+  color: var(--text-light);
+  border: 1px solid var(--text-dark);
+  padding: 1px 6px;
+}
+
 /* ---------- Map container ---------- */
 #map {
   margin-top: 16px;
