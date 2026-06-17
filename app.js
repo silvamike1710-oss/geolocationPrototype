@@ -12,7 +12,7 @@ function getLocation() {
 
     statusEl.textContent = 'Requesting location... tap "allow" on the popup.';
 
-    navigator.geolocation.getCurrentPosition(
+    navigator.geolocation.watchPosition(
         onSuccess,
         onError,
         {
@@ -45,7 +45,7 @@ function onError(error) {
             statusEl.textContent = 'Request timed out. Try again outdoors or near a window.';
             break;
         default:
-            statusEl.textContent = 'Unkown error while getting location.';
+            statusEl.textContent = 'Unknown error while getting location.';
     }
 }
 
