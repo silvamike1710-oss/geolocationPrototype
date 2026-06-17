@@ -7,12 +7,12 @@
 
 :root {
   /* --- Our custom Win95 palette (classic Win95 used grey, we're using orange) --- */
-  --face: #d97a2e;        /* the main "desktop application" face color */
+  --face: #ef9e5c;        /* the main "desktop application" face color */
   --face-light: #ffb968;  /* lightest edge of a bevel (top/left highlight) */
   --face-dark: #7a3c10;   /* darkest edge of a bevel (bottom/right shadow) */
 
-  --titlebar-start: #c4302b; /* red title bar gradient start */
-  --titlebar-end: #7a1916;   /* red title bar gradient end */
+  --titlebar-start: #c34f4b; /* red title bar gradient start */
+  --titlebar-end: #962623;   /* red title bar gradient end */
 
   --accent-green: #3f8f4a;       /* button face color */
   --accent-green-light: #8fd99a; /* button highlight edge */
@@ -29,7 +29,7 @@
 body {
   font-family: 'VT323', monospace;
   font-size: 20px;
-  background: #5a2c0d; /* dark backdrop so the window "pops" */
+  background: #efcbb2; /* dark backdrop so the window "pops" */
   display: flex;
   justify-content: center;
   align-items: center;
