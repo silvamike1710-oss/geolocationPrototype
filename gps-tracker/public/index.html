@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+        <title>GPS Tracker.exe</title>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <link rel="stylesheet" href="style.css"/>
+    </head>
+    <body>
+        <div class="window">
+          <div class="title-bar">
+            <span class="title-bar-text">GPS Tracker.exe</span>
+            <div class="title-bar-controls">
+                <button aria-label="Minimize">_</button>
+                <button aria-label="Maximize">▢</button>
+                <button aria-label="Close">X</button>
+            </div>
+        </div>
+
+
+        <div class="window-body">
+            <p class="intro-text">Click the button below and allow location access.</p>
+            <button id="startBtn" class="win95-button">▶ Start GPS</button>
+            <div class="output-box">
+                <p>Latitude: <span id="lat">--</span></p>
+                <p>Longitude: <span id="lng">--</span></p>
+                <p>Accuracy: <span id="acc">--</span> meters</p>
+            </div>
+
+            <div id="map"></div>
+
+
+            <p id="status" class="status-text"></p>
+        </div>
+        </div>
+         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="app.js"></script>
+    </body>    
+</html>
