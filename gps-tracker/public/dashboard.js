@@ -30,7 +30,9 @@ function updateMap(lat, lng) {
 // Ask the server for the latest reported location
 async function checkForUpdate() {
   try {
-    const res = await fetch('/api/location');
+    const res = await fetch('/api/location', {
+      headers: { 'ngrok-skip-browser-warning': 'true' } // tells ngrok's free tier to skip its warning page
+    });
 
     // 204 means "no location reported yet" — nothing to do
     if (res.status === 204) {
