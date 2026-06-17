@@ -137,6 +137,17 @@ body {
   margin: 4px 0;
 }
 
+/* ---------- Map container ---------- */
+#map {
+  margin-top: 16px;
+  height: 220px;       /* Leaflet needs an explicit height or the map collapses to 0px tall */
+  width: 100%;
+  /* Same "sunken into the screen" bevel as the output box, for visual consistency */
+  box-shadow:
+    inset -1px -1px 0 var(--face-light),
+    inset 1px 1px 0 var(--face-dark);
+}
+
 .status-text {
   margin-top: 12px;
   color: var(--text-dark);

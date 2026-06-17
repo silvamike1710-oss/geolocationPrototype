@@ -33,6 +33,22 @@ function onSuccess(position) {
     statusEl.textContent = 'Location found!';
 }
 
+function updateMap(lat, lng) {
+    if (!map) {
+        map = L.map('map').setView([lat, lng], 16);
+
+        L.titleLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        marker = L.marker([lat, lng]).addTo(map);
+    } else {
+        marker.setLatLng([lat, lng]);
+        map.setView([lat, lng]);
+    }
+}
+
 function onError(error) {
     switch (error.code) {
         case error.PERMISSION_DENIED:
