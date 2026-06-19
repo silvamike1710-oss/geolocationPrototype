@@ -58,12 +58,32 @@ function renderDeviceList(devices) {
   deviceListEl.innerHTML = devices
     .map(d => `
       <p>
-        <strong>${escapeHtml(d.name)}</strong> —
+        <strong>${escapeHtml(d.name)}</strong>
+        <button onclick="deleteDevice"('${d.name})>
+        Delete
+        </button> —
         ${d.lat.toFixed(4)}, ${d.lng.toFixed(4)}
         (±${Math.round(d.accuracy)}m, last seen ${new Date(d.timestamp).toLocaleTimeString()})
       </p>
     `)
     .join('');
+}
+
+async function deleteDevice(name) {
+  if (!confirm(`Delete ${name}?`)) {
+    return;
+  }
+
+  await fetch(
+    `/api/device/${encodeURIComponent(name)}`,
+    {
+      method: 'DELETE',
+      headers: {
+        'ngrok-skip-browser-warning': 'true'
+     }
+    }
+  );
+  checkForUpdates();
 }
 
 async function checkForUpdates() {

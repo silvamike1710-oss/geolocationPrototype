@@ -4,6 +4,10 @@
 const express = require('express');
 const path = require('path');
 
+const fs = require('fs');
+
+const DEVICE_FILE = 'devices.json';
+
 const app = express();
 
 // Render (and most hosts) assign their own port via this environment variable.
@@ -20,6 +24,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 //   "Tablet 1": { lat: -29.70, lng: -53.81, accuracy: 12, timestamp: 1718... }
 // }
 let devices = {};
+if (fs.existsSync(DEVICE_FILE)) {
+  devices = JSON.parse(fs.readFileSync(DEVICE_FILE, 'utf8'));
+}
 
 // A device calls this every time it gets a new GPS reading
 app.post('/api/location', (req, res) => {
@@ -40,8 +47,25 @@ app.post('/api/location', (req, res) => {
     accuracy,
     timestamp: Date.now() // server's clock, so every viewer agrees on "when"
   };
+  saveDevices();
 
   console.log(`📍 ${cleanName}: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+  res.status(204).end();
+});
+
+app.delete('/api/device/:name', (req, res) => {
+  const name = req.params.name;
+
+  if (!devices[name]) {
+    return res.status(404).json({
+      error: 'Device not found'
+    });
+  }
+  
+  delete devices[name];
+
+  saveDevices();
+
   res.status(204).end();
 });
 
@@ -57,3 +81,10 @@ app.get('/api/devices', (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
+
+function saveDevices() {
+  fs.writeFileSync(
+    DEVICE_FILE,
+    JSON.stringify(devices, null, 2)
+  );
+}
