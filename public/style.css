@@ -85,6 +85,13 @@ body {
     inset -1px -1px 0 var(--face-dark);
   cursor: pointer;
 }
+/* tabs */
+.tab-panel {
+  display: none;
+}
+.tab-panel.active {
+  display: block;
+}
 
 /* ---------- Window body / content ---------- */
 .window-body {
