@@ -19,17 +19,56 @@
       </div>
     </div>
 
-    <div class="window-body">
-      <p class="intro-text">Tracked devices:</p>
+    <!-- Tab buttons. data-tab matches the id suffix of each panel below (tab-map, tab-routes, ...) -->
+    <div class="tab-bar">
+      <button class="tab-button active" data-tab="map">🗺️ Map</button>
+      <button class="tab-button" data-tab="routes">📝 Routes</button>
+      <button class="tab-button" data-tab="guide">📖 Guide</button>
+      <button class="tab-button" data-tab="feedback">💬 Feedback</button>
+    </div>
 
-      <!-- Filled in dynamically by dashboard.js — one row per device -->
-      <div id="deviceList" class="output-box device-list">
-        <p>Waiting for devices...</p>
+    <div class="window-body">
+
+      <!-- ===== MAP TAB ===== -->
+      <div class="tab-panel active" id="tab-map">
+        <div class="field-row">
+          <label for="deviceSearch">Search devices:</label>
+          <input type="text" id="deviceSearch" class="win95-input" placeholder="Type a device name..." />
+        </div>
+
+        <div id="deviceList" class="output-box device-list">
+          <p>Waiting for devices...</p>
+        </div>
+
+        <div id="map"></div>
+
+        <p id="status" class="status-text"></p>
       </div>
 
-      <div id="map"></div>
+      <!-- ===== ROUTES TAB ===== -->
+      <div class="tab-panel" id="tab-routes">
+        <p class="intro-text">Add notes for each device — planned route, who's carrying it, anything useful.</p>
+        <!-- dashboard.js fills this with one block per known device -->
+        <div id="routesList">
+          <p id="routesEmpty">No devices yet — once one reports a location, you can add notes for it here.</p>
+        </div>
+      </div>
 
-      <p id="status" class="status-text"></p>
+      <!-- ===== GUIDE TAB ===== -->
+      <div class="tab-panel" id="tab-guide">
+        <p class="intro-text">Guide</p>
+        <!-- Add your own instructions/content here later -->
+        <p>More information coming soon.</p>
+      </div>
+
+      <!-- ===== FEEDBACK TAB ===== -->
+      <div class="tab-panel" id="tab-feedback">
+        <p class="intro-text">Send feedback about this dashboard.</p>
+        <textarea id="feedbackText" class="win95-input" rows="4" placeholder="Type your feedback here..."></textarea>
+        <button id="feedbackSubmit" class="win95-button">Send Feedback</button>
+        <p id="feedbackStatus" class="status-text"></p>
+      </div>
+
     </div>
   </div>
 
