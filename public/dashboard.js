@@ -5,6 +5,26 @@
 // ---------- Tab switching ----------
 // Every tab button has data-tab="map" / "routes" / "guide" / "feedback",
 // matching the id suffix of its panel (tab-map, tab-routes, ...).
+// Tab system
+const tabButtons = document.querySelectorAll(".tab-button");
+const tabPanels = document.querySelectorAll(".tab-panel");
+
+tabButtons.forEach(button => {
+    button.addEventListener("click", () => {
+        const tab = button.dataset.tab;
+
+        // Remove active class from all buttons and panels
+        tabButtons.forEach(btn => btn.classList.remove("active"));
+        tabPanels.forEach(panel => panel.classList.remove("active"));
+
+        // Activate clicked button
+        button.classList.add("active");
+
+        // Show matching panel
+        document.getElementById(`tab-${tab}`).classList.add("active");
+    });
+});
+
 document.querySelectorAll('.tab-button').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
