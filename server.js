@@ -6,7 +6,7 @@ const path = require('path');
 
 const fs = require('fs');
 
-const DEVICE_FILE = 'devices.json';
+const DEVICE_FILE = path.join(__dirname, 'devices.json');
 
 const app = express();
 
