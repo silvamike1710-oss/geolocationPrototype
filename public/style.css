@@ -85,14 +85,110 @@ body {
     inset -1px -1px 0 var(--face-dark);
   cursor: pointer;
 }
-/* tabs */
+/* ---------- Tab bar ---------- */
+.tab-bar {
+  display: flex;
+  gap: 3px;
+  padding: 6px 6px 0 6px;
+  background: var(--face);
+  border-bottom: 2px solid var(--face-dark);
+}
+
+.tab-button {
+  flex: 1;
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  color: var(--text-dark);
+  background: var(--face);
+  border: none;
+  padding: 8px 6px;
+  cursor: pointer;
+
+  /* Raised Win95 button */
+  box-shadow:
+    inset 1px 1px 0 var(--face-light),
+    inset -1px -1px 0 var(--face-dark),
+    inset 2px 2px 0 #fff3,
+    inset -2px -2px 0 #0003;
+
+  transition: transform 0.05s;
+}
+
+/* Hover gives a small brightness change */
+.tab-button:hover {
+  filter: brightness(1.08);
+}
+
+/* Active tab looks pressed into the window */
+.tab-button.active {
+  background: #c96b25;
+
+  box-shadow:
+    inset -1px -1px 0 var(--face-light),
+    inset 1px 1px 0 var(--face-dark),
+    inset -2px -2px 0 #fff3,
+    inset 2px 2px 0 #0003;
+
+  transform: translateY(2px);
+}
+
+/* Panels are hidden until selected */
 .tab-panel {
   display: none;
 }
+
 .tab-panel.active {
   display: block;
 }
 
+
+/* ---------- Routes tab ---------- */
+.route-block {
+  margin-bottom: 12px;
+  padding: 10px;
+  background: var(--text-light);
+  color: var(--text-dark);
+
+  /* Sunken Win95 panel */
+  box-shadow:
+    inset -1px -1px 0 var(--face-light),
+    inset 1px 1px 0 var(--face-dark);
+}
+
+.route-block p {
+  margin: 0 0 8px 0;
+}
+
+.route-textarea {
+  margin-bottom: 8px;
+  resize: vertical;
+  min-height: 70px;
+}
+
+/* Hidden by default, appears after saving */
+.route-saved-msg {
+  color: var(--accent-green-dark);
+  margin-top: 6px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.route-saved-msg.visible {
+  opacity: 1;
+}
+
+
+/* ---------- Feedback tab ---------- */
+#feedbackText {
+  margin-bottom: 10px;
+  min-height: 90px;
+  resize: vertical;
+}
+
+#feedbackStatus {
+  margin-top: 10px;
+  color: var(--text-dark);
+}
 /* ---------- Window body / content ---------- */
 .window-body {
   padding: 16px;
