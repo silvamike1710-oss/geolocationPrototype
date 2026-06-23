@@ -1,35 +1,58 @@
 // ============================================
-// server.js — the bridge between your phones/tablets and the dashboard
+// server.js — now backed by MongoDB Atlas instead of memory
 // ============================================
+
+// dotenv reads a local .env file and copies its values into process.env —
+// this is how MONGODB_URI gets in locally without hardcoding it into the code.
+// (On Render, you set the same variable in their dashboard instead of a .env file.)
+require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
-
-const fs = require('fs');
-
-const DEVICE_FILE = path.join(__dirname, 'devices.json');
+const mongoose = require('mongoose');
 
 const app = express();
-
-// Render (and most hosts) assign their own port via this environment variable.
-// process.env.PORT will be undefined when running locally, so it falls back to 3000.
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// In-memory storage: one entry PER DEVICE NAME.
-// Example shape once a few devices have reported in:
-// {
-//   "Phone 1":  { lat: -29.68, lng: -53.80, accuracy: 8,  timestamp: 1718... },
-//   "Tablet 1": { lat: -29.70, lng: -53.81, accuracy: 12, timestamp: 1718... }
-// }
-let devices = {};
-if (fs.existsSync(DEVICE_FILE)) {
-  devices = JSON.parse(fs.readFileSync(DEVICE_FILE, 'utf8'));
+// ---------- Connect to MongoDB ----------
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error('❌ Missing MONGODB_URI. Add it to a local .env file, or to Render\'s Environment settings.');
+  process.exit(1);
 }
 
-// A device calls this every time it gets a new GPS reading
-app.post('/api/location', (req, res) => {
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch(err => {
+    console.error('❌ Could not connect to MongoDB:', err.message);
+    process.exit(1);
+  });
+
+// ---------- Schemas ----------
+// A schema is just a description of what fields a document has and what type they are.
+// "unique: true" on name means MongoDB itself will reject a second device with the same name.
+const deviceSchema = new mongoose.Schema({
+  name: { type: String, required: true, unique: true },
+  lat: Number,
+  lng: Number,
+  accuracy: Number,
+  timestamp: Number,
+  notes: { type: String, default: '' }
+});
+const Device = mongoose.model('Device', deviceSchema);
+
+const feedbackSchema = new mongoose.Schema({
+  text: String,
+  timestamp: Number
+});
+const Feedback = mongoose.model('Feedback', feedbackSchema);
+
+// ---------- Device location endpoints ----------
+app.post('/api/location', async (req, res) => {
   const { name, lat, lng, accuracy } = req.body;
 
   if (typeof name !== 'string' || name.trim() === '') {
@@ -39,52 +62,91 @@ app.post('/api/location', (req, res) => {
     return res.status(400).json({ error: 'lat and lng must be numbers' });
   }
 
-  const cleanName = name.trim().slice(0, 40); // keep names reasonably short
+  const cleanName = name.trim().slice(0, 40);
 
-  devices[cleanName] = {
-    lat,
-    lng,
-    accuracy,
-    timestamp: Date.now() // server's clock, so every viewer agrees on "when"
-  };
-  saveDevices();
+  try {
+    // upsert: true means "update it if it exists, create it if it doesn't" —
+    // one line handles both a brand new device AND a returning one.
+    // Using $set explicitly (instead of a plain object) guarantees we ONLY touch
+    // these fields, so any saved "notes" for this device are never overwritten.
+    await Device.findOneAndUpdate(
+      { name: cleanName },
+      { $set: { name: cleanName, lat, lng, accuracy, timestamp: Date.now() } },
+      { upsert: true }
+    );
 
-  console.log(`📍 ${cleanName}: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-  res.status(204).end();
-});
-
-app.delete('/api/device/:name', (req, res) => {
-  const name = req.params.name;
-
-  if (!devices[name]) {
-    return res.status(404).json({
-      error: 'Device not found'
-    });
+    console.log(`📍 ${cleanName}: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+    res.status(204).end();
+  } catch (err) {
+    console.error('Error saving location:', err);
+    res.status(500).json({ error: 'database error' });
   }
-  
-  delete devices[name];
-
-  saveDevices();
-
-  res.status(204).end();
 });
 
-// The dashboard calls this to get EVERY known device's latest location
-app.get('/api/devices', (req, res) => {
-  // Turn { "Phone 1": {...}, "Tablet 1": {...} } into
-  // [ { name: "Phone 1", lat: ..., lng: ... }, { name: "Tablet 1", ... } ]
-  // — an array is easier for the dashboard to loop over than an object.
-  const list = Object.entries(devices).map(([name, data]) => ({ name, ...data }));
-  res.json(list);
+app.get('/api/devices', async (req, res) => {
+  try {
+    const devices = await Device.find().lean(); // .lean() returns plain JS objects, faster than full Mongoose documents
+    // Mongo adds its own _id and __v fields — strip them, the frontend doesn't need them
+    const cleaned = devices.map(({ _id, __v, ...rest }) => rest);
+    res.json(cleaned);
+  } catch (err) {
+    console.error('Error fetching devices:', err);
+    res.status(500).json({ error: 'database error' });
+  }
+});
+
+// Saves/updates the free-text notes for one device (used by the Routes tab)
+app.put('/api/devices/:name/notes', async (req, res) => {
+  const { name } = req.params; // Express automatically URL-decodes this
+  const { notes } = req.body;
+
+  if (typeof notes !== 'string') {
+    return res.status(400).json({ error: 'notes must be a string' });
+  }
+
+  try {
+    const updated = await Device.findOneAndUpdate(
+      { name },
+      { $set: { notes: notes.slice(0, 2000) } }
+    );
+    if (!updated) {
+      return res.status(404).json({ error: 'unknown device' });
+    }
+    res.status(204).end();
+  } catch (err) {
+    console.error('Error saving notes:', err);
+    res.status(500).json({ error: 'database error' });
+  }
+});
+
+// ---------- Feedback endpoints ----------
+app.post('/api/feedback', async (req, res) => {
+  const { text } = req.body;
+
+  if (typeof text !== 'string' || text.trim() === '') {
+    return res.status(400).json({ error: 'text is required' });
+  }
+
+  try {
+    await Feedback.create({ text: text.trim().slice(0, 2000), timestamp: Date.now() });
+    console.log(`💬 Feedback received: ${text.trim().slice(0, 80)}`);
+    res.status(204).end();
+  } catch (err) {
+    console.error('Error saving feedback:', err);
+    res.status(500).json({ error: 'database error' });
+  }
+});
+
+// Lets you peek at collected feedback by visiting this URL in a browser
+app.get('/api/feedback', async (req, res) => {
+  try {
+    const all = await Feedback.find().lean();
+    res.json(all);
+  } catch (err) {
+    res.status(500).json({ error: 'database error' });
+  }
 });
 
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
-
-function saveDevices() {
-  fs.writeFileSync(
-    DEVICE_FILE,
-    JSON.stringify(devices, null, 2)
-  );
-}
