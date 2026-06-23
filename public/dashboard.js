@@ -30,10 +30,26 @@ const deviceListEl = document.getElementById('deviceList');
 const statusEl = document.getElementById('status');
 const searchInput = document.getElementById('deviceSearch');
 
+let myMarker = null;
 let map;
 const markers = {};       // device name -> Leaflet marker
 let knownNames = new Set(); // used to only auto-zoom when a NEW device appears
 let searchTerm = '';
+
+function updateMyMarker() {
+  if (!myLocation || !map) return;
+
+  if (!myMarker) {
+    myMarker = L.marker([myLocation.lat, myLocation.lng])
+      .addTo(map)
+      .bindTooltip("You", {
+        permanent: true,
+        direction: "top"
+      });
+  } else {
+    myMarker.setLatLng([myLocation.lat, myLocation.lng]);
+  }
+}
 
 searchInput.addEventListener('input', () => {
   searchTerm = searchInput.value.trim().toLowerCase();
@@ -110,11 +126,13 @@ function renderDeviceList(devices) {
 
       const data = await res.json();
 
-      el.querySelector('.distance').textContent =
+      const distEl = el.querySelector('.distance');
+
+      distEl.textContent =
         `📏 ${data.distanceMeters}m away (${data.distanceKm} km)`;
+      });
     });
-  });
-}
+  }
 
 let lastDevices = []; // remembered so the search box can re-filter without waiting on the server
 
@@ -130,6 +148,9 @@ async function checkForUpdates() {
       updateMarkerPosition(d);
       setMarkerVisibility(d, passesFilter(d));
     });
+
+updateMyLocation();   // refresh your position
+updateMyMarker();     // show/update YOU on map
 
     renderDeviceList(devices.filter(passesFilter));
     renderRoutesPanel(devices);
@@ -229,22 +250,31 @@ feedbackSubmit.addEventListener('click', async () => {
 });
 let myLocation = null;
 
-navigator.geolocation.getCurrentPosition(
-  (pos) => {
-    myLocation = {
-      lat: pos.coords.latitude,
-      lng: pos.coords.longitude
-    };
-  },
-  (err) => {
-    console.error("Geolocation error:", err);
-  },
-  {
-    enableHighAccuracy: true,
-    timeout: 10000,
-    maximumAge: 0
-  }
-);
+function updateMyLocation() {
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      myLocation = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude
+      };
+    },
+    (err) => {
+      console.error("Geolocation failed:", err);
+      myLocation = null;
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+  );
+}
+
+// run once immediately
+updateMyLocation();
+
+// refresh location every 10 seconds (important)
+setInterval(updateMyLocation, 10000);
 
 // ---------- Start polling ----------
 checkForUpdates();
