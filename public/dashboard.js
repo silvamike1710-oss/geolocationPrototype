@@ -101,13 +101,35 @@ function renderDeviceList(devices) {
     deviceListEl.innerHTML = '<p>No matching devices.</p>';
     return;
   }
+
   deviceListEl.innerHTML = devices.map(d => `
-    <p>
-      <strong>${escapeHtml(d.name)}</strong> —
-      ${d.lat.toFixed(4)}, ${d.lng.toFixed(4)}
-      (±${Math.round(d.accuracy)}m, last seen ${new Date(d.timestamp).toLocaleTimeString()})
-    </p>
+    <div class="device-item" data-name="${d.name}">
+      <strong>${escapeHtml(d.name)}</strong><br>
+      ${d.lat.toFixed(4)}, ${d.lng.toFixed(4)}<br>
+      (±${Math.round(d.accuracy)}m)
+      <div class="distance"></div>
+    </div>
   `).join('');
+
+  document.querySelectorAll('.device-item').forEach(el => {
+    el.addEventListener('click', async () => {
+      if (!myLocation) {
+        alert('Waiting for your location...');
+        return;
+      }
+
+      const name = el.dataset.name;
+
+      const res = await fetch(
+        `/api/distance?name=${encodeURIComponent(name)}&lat=${myLocation.lat}&lng=${myLocation.lng}`
+      );
+
+      const data = await res.json();
+
+      el.querySelector('.distance').textContent =
+        `📏 ${data.distanceMeters}m away (${data.distanceKm} km)`;
+    });
+  });
 }
 
 let lastDevices = []; // remembered so the search box can re-filter without waiting on the server
@@ -220,6 +242,14 @@ feedbackSubmit.addEventListener('click', async () => {
   } catch (err) {
     feedbackStatus.textContent = '❌ Could not reach the server.';
   }
+});
+let myLocation = null;
+
+navigator.geolocation.getCurrentPosition((pos) => {
+  myLocation = {
+    lat: pos.coords.latitude,
+    lng: pos.coords.longitude
+  };
 });
 
 // ---------- Start polling ----------
