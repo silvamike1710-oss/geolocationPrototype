@@ -32,6 +32,10 @@ mongoose.connect(MONGODB_URI)
     process.exit(1);
   });
 
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('✅ Connected to MongoDB, database:', mongoose.connection.name))
+  .catch(err => console.error('❌ MongoDB connection error:', err))
+
 // ---------- Schemas ----------
 // A schema is just a description of what fields a document has and what type they are.
 // "unique: true" on name means MongoDB itself will reject a second device with the same name.
