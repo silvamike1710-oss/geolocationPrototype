@@ -96,6 +96,8 @@ function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+let lastDistances = {}; // device name -> last computed distance text
+
 function renderDeviceList(devices) {
   if (devices.length === 0) {
     deviceListEl.innerHTML = '<p>No matching devices.</p>';
@@ -107,16 +109,16 @@ function renderDeviceList(devices) {
       <strong>${escapeHtml(d.name)}</strong><br>
       ${d.lat.toFixed(4)}, ${d.lng.toFixed(4)}<br>
       (±${Math.round(d.accuracy)}m)
-      <div class="distance"></div>
+      <div class="distance">${lastDistances[d.name] || ''}</div>
     </div>
   `).join('');
 
   document.querySelectorAll('.device-item').forEach(el => {
     el.addEventListener('click', async () => {
       if (!myLocation || !myLocation.lat || !myLocation.lng) {
-      alert('Waiting for your location...');
-      return;
-    }
+        alert('Waiting for your location...');
+        return;
+      }
 
       const name = el.dataset.name;
 
@@ -126,13 +128,14 @@ function renderDeviceList(devices) {
 
       const data = await res.json();
 
-      const distEl = el.querySelector('.distance');
+      const distText = `📏 ${data.distanceMeters}m away (${data.distanceKm} km)`;
+      lastDistances[name] = distText; // remember it
 
-      distEl.textContent =
-        `📏 ${data.distanceMeters}m away (${data.distanceKm} km)`;
-      });
+      const distEl = el.querySelector('.distance');
+      distEl.textContent = distText;
     });
-  }
+  });
+}
 
 let lastDevices = []; // remembered so the search box can re-filter without waiting on the server
 
